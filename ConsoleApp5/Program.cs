@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace ConsoleApp5
 {
@@ -9,7 +10,18 @@ namespace ConsoleApp5
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            EfGenericRepository<StudentPoco> students = 
+                new EfGenericRepository<StudentPoco>();
+
+            students.Add(new StudentPoco()
+                {
+                    Courses = new List<CoursePoco>()
+                    { new CoursePoco() {Name = ".Net Bridging"}},
+                    Name = "Sally JOnes"
+                    
+                });
+
+
         }
     }
 
@@ -27,6 +39,8 @@ namespace ConsoleApp5
 
     public class SchoolContext : DbContext
     {
+        public static readonly ILoggerFactory MyLoggerFactory
+           = LoggerFactory.Create(builder => { builder.AddConsole(); });
 
         public DbSet<StudentPoco> Students { get; set; }
         public DbSet<CoursePoco> Courses { get; set; }
@@ -37,7 +51,9 @@ namespace ConsoleApp5
             OnConfiguring(
             DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer(@"Data Source=CSHARPHUMBER\HUMBERBRIDGING;Initial Catalog=HUMBER_MARKS_DB;Integrated Security=True;");
+            optionsBuilder
+            .UseLoggerFactory(MyLoggerFactory).
+            UseSqlServer(@"Data Source=CSHARPHUMBER\HUMBERBRIDGING;Initial Catalog=HUMBER_MARKS_DB;Integrated Security=True;");
         }
 
         protected override void OnModelCreating(
@@ -76,14 +92,20 @@ namespace ConsoleApp5
         public string Name { get; set; }
     }
 
-    public class MarkPoco
+    public class MarkPoco : ISoftDelete
     {
         public int CourseId { get; set; }
         public int StudentId { get; set; }
         public CoursePoco Course { get; set; }
         public StudentPoco Student { get; set; }
         public int Mark { get; set; }
-
+        public bool AmIDeleted { get; set ; }
     }
+
+    public interface ISoftDelete
+    {
+        public bool AmIDeleted { get; set; }
+    }
+
 
 }
