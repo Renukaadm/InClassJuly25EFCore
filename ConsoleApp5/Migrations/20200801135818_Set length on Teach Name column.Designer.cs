@@ -4,14 +4,16 @@ using ConsoleApp5;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ConsoleApp5.Migrations
 {
     [DbContext(typeof(SchoolContext))]
-    partial class SchoolContextModelSnapshot : ModelSnapshot
+    [Migration("20200801135818_Set length on Teach Name column")]
+    partial class SetlengthonTeachNamecolumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -29,13 +31,18 @@ namespace ConsoleApp5.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("StudentPocoId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Subject")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("TeacherId")
+                    b.Property<int>("TeacherId")
                         .HasColumnType("int");
 
                     b.HasKey("MumboJumbo");
+
+                    b.HasIndex("StudentPocoId");
 
                     b.HasIndex("TeacherId");
 
@@ -56,11 +63,6 @@ namespace ConsoleApp5.Migrations
                     b.Property<int>("Mark")
                         .HasColumnType("int");
 
-                    b.Property<byte[]>("TimeStamp")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
                     b.HasKey("CourseId", "StudentId");
 
                     b.HasIndex("StudentId");
@@ -75,33 +77,12 @@ namespace ConsoleApp5.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<decimal>("Age")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("DoB")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.ToTable("Students");
-                });
-
-            modelBuilder.Entity("ConsoleApp5.Students_Courses", b =>
-                {
-                    b.Property<int>("CourseId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StudentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("CourseId", "StudentId");
-
-                    b.HasIndex("StudentId");
-
-                    b.ToTable("Students_Courses");
                 });
 
             modelBuilder.Entity("ConsoleApp5.TeacherPoco", b =>
@@ -122,9 +103,15 @@ namespace ConsoleApp5.Migrations
 
             modelBuilder.Entity("ConsoleApp5.CoursePoco", b =>
                 {
+                    b.HasOne("ConsoleApp5.StudentPoco", null)
+                        .WithMany("Courses")
+                        .HasForeignKey("StudentPocoId");
+
                     b.HasOne("ConsoleApp5.TeacherPoco", "Teacher")
                         .WithMany()
-                        .HasForeignKey("TeacherId");
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("ConsoleApp5.MarkPoco", b =>
@@ -137,21 +124,6 @@ namespace ConsoleApp5.Migrations
 
                     b.HasOne("ConsoleApp5.StudentPoco", "Student")
                         .WithMany()
-                        .HasForeignKey("StudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("ConsoleApp5.Students_Courses", b =>
-                {
-                    b.HasOne("ConsoleApp5.CoursePoco", "Course")
-                        .WithMany("StudentCourses")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ConsoleApp5.StudentPoco", "Student")
-                        .WithMany("StudentCourses")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
